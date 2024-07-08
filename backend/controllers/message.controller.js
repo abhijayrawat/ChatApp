@@ -1,5 +1,6 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.models.js";
+import { getReceiverSocketId ,io} from "../socket/socket.js";
 
 export const sendMessage = async (req, res) => {
     try {
@@ -7,9 +8,9 @@ export const sendMessage = async (req, res) => {
         const { id: receiverId } = req.params;  // Assuming receiverId is passed as 'id' in params
         const senderId = req.user._id;
         
-        console.log("Sender ID:", senderId);
-        console.log("Receiver ID:", receiverId);
-        console.log("Message:", message);
+        // console.log("Sender ID:", senderId);
+        // console.log("Receiver ID:", receiverId);
+        // console.log("Message:", message);
 
         let conversation = await Conversation.findOne({
             participants: { $all: [senderId, receiverId] },
@@ -29,13 +30,18 @@ export const sendMessage = async (req, res) => {
 
         //if new mwssage is created then push the message id in the conversation
         if(newMessage){
-        console.log("New Message Object:", newMessage);
+        // console.log("New Message Object:", newMessage);
         conversation.messages.push(newMessage._id);
         }
 
         //Socket io functionality
         await Promise.all([conversation.save(),newMessage.save()]);
 
+        const receiverSocketId = getReceiverSocketId(receiverId);
+		if (receiverSocketId) {
+			// io.to(<socket_id>).emit() used to send events to specific client
+			io.to(receiverSocketId).emit("newMessage", newMessage);
+		}
 
         res.status(201).json(newMessage);
     } catch (error) {
@@ -49,8 +55,8 @@ export const getMessages = async (req, res) => {
         const { id: userToChatId } = req.params;  // Assuming userToChatId is passed as 'id' in params
         const senderId = req.user._id;
 
-        console.log("Sender ID:", senderId);
-        console.log("Receiver ID:", userToChatId);
+        // console.log("Sender ID:", senderId);
+        // console.log("Receiver ID:", userToChatId);
 
         const conversation = await Conversation.findOne({
             participants: { $all: [senderId, userToChatId] },
@@ -63,7 +69,7 @@ export const getMessages = async (req, res) => {
         const messages = conversation.messages;
         
 
-        res.status(200).json(conversation.messages);
+        res.status(200).json(messages);
     }
     catch(error){
         console.error("Error in get messages:", error.message);
