@@ -1,11 +1,12 @@
+import { useEffect, useRef } from "react";
 import useGetMessages from "../../hooks/useGetMessages";
 import MessageSkeleton from "../skeletons/MessageSkeleton";
 import Message from "./Message";
-import { useEffect, useRef } from "react";
+import useListenMessages from "../../hooks/useListenMessages";
 
 const Messages = () => {
-	const{messages,loading}=useGetMessages();
-	// console.log("messages:",messages);
+	const { messages, loading } = useGetMessages();
+	useListenMessages();
 	const lastMessageRef = useRef();
 
 	useEffect(() => {
@@ -13,7 +14,6 @@ const Messages = () => {
 			lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
 		}, 100);
 	}, [messages]);
-
 
 	return (
 		<div className='px-4 flex-1 overflow-auto'>
@@ -33,3 +33,26 @@ const Messages = () => {
 	);
 };
 export default Messages;
+
+// STARTER CODE SNIPPET
+// import Message from "./Message";
+
+// const Messages = () => {
+// 	return (
+// 		<div className='px-4 flex-1 overflow-auto'>
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 			<Message />
+// 		</div>
+// 	);
+// };
+// export default Messages;
